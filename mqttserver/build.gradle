@@ -1,0 +1,49 @@
+
+plugins {
+    id 'java-library'
+    id 'maven-publish'
+}
+
+task sourcesJar(type: Jar) {
+    from sourceSets.main.allJava
+    from('src/main/resources') {
+        include '**'
+    }
+    archiveClassifier = 'sources'
+}
+
+group = 'd1.duoxian'
+version = '2.0.7'
+
+repositories {
+    mavenCentral()
+    maven {
+        allowInsecureProtocol=true
+        url 'http://118.253.150.123:8081/repository/d1-java/'
+    }
+}
+dependencies {
+    api('org.slf4j:slf4j-api:1.7.32')
+    api('io.netty:netty-all:4.1.86.Final')
+}
+
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            artifactId = 'mqttserver'
+            version = version
+            from components.java
+            artifact sourcesJar
+        }
+    }
+    repositories {
+        maven {
+            credentials {
+                username '上传库用户名'
+                password '上传库密码'
+            }
+            allowInsecureProtocol=true
+            url "http://118.253.150.123:8081/repository/d1-java/"
+        }
+    }
+}

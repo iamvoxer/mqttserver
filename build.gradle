@@ -1,0 +1,35 @@
+
+plugins {
+    id 'java'
+    id 'org.springframework.boot' version '2.6.2'
+}
+
+
+group = 'd1.framework'
+version = '0.0.1-SNAPSHOT'
+
+repositories {
+    mavenLocal()
+    maven { url 'https://maven.aliyun.com/repository/public/' }
+    maven { url 'https://maven.aliyun.com/repository/jcenter' }
+    maven { url 'https://maven.aliyun.com/repository/google' }
+    maven { url 'https://maven.aliyun.com/repository/central' }
+    maven { url 'https://maven.aliyun.com/repository/gradle-plugin' }
+    maven { url 'https://maven.aliyun.com/repository/spring'}
+    maven { url 'https://maven.aliyun.com/repository/spring-plugin'}
+    maven { url 'https://maven.aliyun.com/repository/grails-core'}
+    //我们的私有maven库
+    maven {
+        allowInsecureProtocol = true
+        url 'http://118.253.150.123:8081/repository/d1-java/'
+    }
+    mavenCentral()
+}
+
+
+dependencies {
+    implementation('d1.duoxian:webapi:2.0.0')
+    implementation project(':mqttserver')
+    implementation('mysql:mysql-connector-java:8.0.30')
+    implementation('org.springframework.boot:spring-boot-starter-test:2.6.2')
+}
