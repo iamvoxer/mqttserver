@@ -13,7 +13,7 @@ task sourcesJar(type: Jar) {
 }
 
 group = 'd1.duoxian'
-version = '2.0.7'
+version = '2.0.8'
 
 repositories {
     mavenCentral()
@@ -39,8 +39,8 @@ publishing {
     repositories {
         maven {
             credentials {
-                username 'ä¸Šä¼ åº“ç”¨æˆ·å'
-                password 'ä¸Šä¼ åº“å¯†ç '
+                username 'ÉÏ´«¿âÓÃ»§Ãû'
+                password 'ÉÏ´«¿âÃÜÂë'
             }
             allowInsecureProtocol=true
             url "http://118.253.150.123:8081/repository/d1-java/"

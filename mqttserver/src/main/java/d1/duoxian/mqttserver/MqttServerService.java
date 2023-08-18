@@ -13,10 +13,13 @@ import io.netty.handler.codec.mqtt.MqttDecoder;
 import io.netty.handler.codec.mqtt.MqttEncoder;
 import io.netty.handler.logging.LogLevel;
 import io.netty.handler.logging.LoggingHandler;
+import io.netty.handler.ssl.SslContext;
+import io.netty.handler.ssl.SslContextBuilder;
 import io.netty.handler.timeout.IdleStateHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.File;
 import java.util.concurrent.LinkedBlockingQueue;
 
 /**
@@ -29,7 +32,7 @@ public class MqttServerService {
     private NioEventLoopGroup workGroup;
     private ClientSessionManager clientSessionManager;
     private LinkedBlockingQueue<WrapMqttMessage> eventQueue;
-
+    private SslContext sslContext = null;
     public ClientSessionManager getClientSessionManager() {
         return clientSessionManager;
     }
@@ -112,11 +115,19 @@ public class MqttServerService {
             //非JVM管理的，由os管理的内存,减少数据传输的一次copy
             bootstrap.childOption(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT);
             bootstrap.handler(new LoggingHandler(LogLevel.INFO));
-
+            // 创建SSL上下文
+            if (option.isSsl()) {
+                sslContext = SslContextBuilder.forServer(new File(option.getServerCertFile()), new File(option.getKeyFile()))
+                        .trustManager(new File(option.getCaCertFile())).build();
+            }
             bootstrap.childHandler(new ChannelInitializer<SocketChannel>() {
                 @Override
                 protected void initChannel(SocketChannel ch) {
                     ChannelPipeline channelPipeline = ch.pipeline();
+                    if(sslContext!=null) {
+                        // 将SSL上下文添加到ChannelPipeline中
+                        channelPipeline.addLast(sslContext.newHandler(ch.alloc()));
+                    }
                     // 设置读写空闲超时时间，单位是秒.这里只考虑读，也就是channelRead() 方法超过 readerIdleTime 时间未被调用则会触发超时事件调用 userEventTrigger()。
                     channelPipeline.addLast(new IdleStateHandler(option.getCheckOfflineInterval(), 0, 0));
                     channelPipeline.addLast("encoder", MqttEncoder.INSTANCE);
@@ -136,6 +147,7 @@ public class MqttServerService {
             }
         }
     }
+
     private void queueHandle(MqttServerServiceOption option) {
         //从队列里去消息处理，可以提供mqttsever的并发处理能力
         new Thread(() -> {

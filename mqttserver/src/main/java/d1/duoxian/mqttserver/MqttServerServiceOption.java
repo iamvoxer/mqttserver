@@ -49,6 +49,30 @@ public class MqttServerServiceOption {
      * 接收到的消息先存入队列，这个值是缺省的队列大小，如果队列满了，就无法接收新的数据，请确保快速处理队列里的数据
      */
     private Integer maxMessageCount = 100000;
+    /**
+     * 缺省不支持 SSL
+     */
+    private boolean ssl = false;
+    /**
+     * CA证书文件，一般叫ca.crt
+     * 指令参考：openssl req -new -x509 -keyout ca.key -out ca.crt -days 36500
+     */
+    private String caCertFile;
+
+    /**
+     * an X.509 certificate chain file in PEM format
+     * server证书文件，一般叫server.crt
+     * 指令参考：openssl x509 -req -days 36500 -in server.csr -CA ca.crt -CAkey ca.key -CAcreateserial -out server.crt
+     * ，如果需要和域名或ip绑定需要加上 -extfile <(printf "subjectAltName=IP:127.0.0.1")
+     */
+    private String serverCertFile;
+    /**
+     * a PKCS#8 private key file in PEM format
+     * 私钥文件，因为netty只支持pkcs8，所以需要2个步骤，第二个步骤改成pkcs8格式
+     * openssl genrsa -des3 -out server.key 1024
+     * openssl pkcs8 -topk8 -in server.key -out pkcs8_server.key -nocrypt
+     */
+    private String keyFile;
 
     private MqttServerServiceOption(Builder builder) {
         this.defaultCharset = builder.defaultCharset;
@@ -60,6 +84,10 @@ public class MqttServerServiceOption {
         this.checkOfflineInterval = builder.checkOfflineInterval;
         this.maxBytesInMessage = builder.maxBytesInMessage;
         this.maxMessageCount = builder.maxMessageCount;
+        this.ssl = builder.ssl;
+        this.caCertFile = builder.caCertFile;
+        this.serverCertFile = builder.serverCertFile;
+        this.keyFile = builder.keyFile;
     }
 
     public static class Builder {
@@ -72,6 +100,10 @@ public class MqttServerServiceOption {
         private Integer checkOfflineInterval;
         private Integer maxBytesInMessage;
         private Integer maxMessageCount = 100000;
+        private boolean ssl = false;
+        private String caCertFile;
+        private String serverCertFile;
+        private String keyFile;
 
         public MqttServerServiceOption build() {
             return new MqttServerServiceOption(this);
@@ -119,6 +151,14 @@ public class MqttServerServiceOption {
 
         public Builder maxBytesInMessage(Integer maxBytesInMessage) {
             this.maxBytesInMessage = maxBytesInMessage;
+            return this;
+        }
+
+        public Builder ssl(String caCertFile, String serverCertFile, String keyFile) {
+            this.ssl = true;
+            this.caCertFile = caCertFile;
+            this.serverCertFile = serverCertFile;
+            this.keyFile = keyFile;
             return this;
         }
     }
@@ -187,5 +227,21 @@ public class MqttServerServiceOption {
             maxBytesInMessage = 102400;
         }
         return maxBytesInMessage;
+    }
+
+    public boolean isSsl() {
+        return ssl;
+    }
+
+    public String getCaCertFile() {
+        return caCertFile;
+    }
+
+    public String getServerCertFile() {
+        return serverCertFile;
+    }
+
+    public String getKeyFile() {
+        return keyFile;
     }
 }

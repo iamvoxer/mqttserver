@@ -1,7 +1,10 @@
 
 plugins {
     id 'java'
+    id 'java-library'
+    id 'maven-publish'
     id 'org.springframework.boot' version '2.6.2'
+    id 'io.spring.dependency-management' version '1.0.15.RELEASE'
 }
 
 
@@ -15,9 +18,9 @@ repositories {
     maven { url 'https://maven.aliyun.com/repository/google' }
     maven { url 'https://maven.aliyun.com/repository/central' }
     maven { url 'https://maven.aliyun.com/repository/gradle-plugin' }
-    maven { url 'https://maven.aliyun.com/repository/spring'}
-    maven { url 'https://maven.aliyun.com/repository/spring-plugin'}
-    maven { url 'https://maven.aliyun.com/repository/grails-core'}
+    maven { url 'https://maven.aliyun.com/repository/spring' }
+    maven { url 'https://maven.aliyun.com/repository/spring-plugin' }
+    maven { url 'https://maven.aliyun.com/repository/grails-core' }
     //我们的私有maven库
     maven {
         allowInsecureProtocol = true
@@ -28,8 +31,14 @@ repositories {
 
 
 dependencies {
-    implementation('d1.duoxian:webapi:2.0.0')
     implementation project(':mqttserver')
     implementation('mysql:mysql-connector-java:8.0.30')
+    implementation group: 'org.eclipse.paho', name: 'org.eclipse.paho.client.mqttv3', version: '1.2.5'
+    // https://mvnrepository.com/artifact/org.bouncycastle/bcpkix-jdk15on
+    implementation group: 'org.bouncycastle', name: 'bcpkix-jdk15on', version: '1.70'
+
+    implementation group: 'org.bouncycastle', name: 'bcprov-jdk15on', version: '1.70'
+
+    implementation('d1.duoxian:webapi:2.0.0')
     implementation('org.springframework.boot:spring-boot-starter-test:2.6.2')
 }

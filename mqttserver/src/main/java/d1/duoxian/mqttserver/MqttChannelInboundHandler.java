@@ -6,6 +6,7 @@ import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.handler.codec.mqtt.*;
+import io.netty.handler.timeout.IdleStateEvent;
 import io.netty.util.ReferenceCountUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -142,7 +143,7 @@ public class MqttChannelInboundHandler extends ChannelInboundHandlerAdapter {
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
         // super.exceptionCaught(ctx, cause); 注释是为了解决：远程主机强迫关闭了一个现有的连接 错误，
-        logger.error("MQTT Server IO异常,{}:{}", ctx.channel().id().asLongText(), cause.getMessage());
+        logger.error("MQTT Server exception,{}:{}", ctx.channel().id().asLongText(), cause.getMessage());
         ctx.close();
     }
 
@@ -171,13 +172,15 @@ public class MqttChannelInboundHandler extends ChannelInboundHandlerAdapter {
     }
 
     /**
-     * 服务端 当读超时时 会调用这个方法
+     * 服务端 当读超时时 会调用这个方法，SSL的时候也会触发SslCloseCompletionEvent，SslHandshakeCompletionEvent
      */
     @Override
     public void userEventTriggered(ChannelHandlerContext ctx, Object evt) throws Exception {
         super.userEventTriggered(ctx, evt);
-        logger.info("MQTT Server Channel timeout:{}", ctx.channel().id().asLongText());
-        ctx.close();
+        logger.info("MQTT Server Channel Event:{},{}", ctx.channel().id().asLongText(), evt.toString());
+        if (evt instanceof IdleStateEvent) {
+            ctx.close();
+        }
     }
 
 

@@ -1,9 +1,6 @@
 package d1.framework.webapisample;
 
-import d1.duoxian.mqttserver.ClientSession;
-import d1.duoxian.mqttserver.CustomMqttPublishMessage;
-import d1.duoxian.mqttserver.IMqttMessageListener;
-import d1.duoxian.mqttserver.MqttServerService;
+import d1.duoxian.mqttserver.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.ApplicationArguments;
@@ -24,7 +21,18 @@ public class MyAppRunner implements ApplicationRunner, IMqttMessageListener {
     @Override
     public void run(ApplicationArguments args) throws Exception {
         //在这里添加应用启动的时候一些初始化工作
-        new MqttServerService().startup(8888, this, null);
+        String sslFileRoot = "D:\\Work\\framework\\mqttserver-duoxian\\cert\\";
+        String caCertFile = sslFileRoot + "ca.crt";
+        String serverCertFile = sslFileRoot + "server.crt";
+        String keyFile = sslFileRoot + "pkcs8_server.key";
+        //不带SSL
+        //new MqttServerService().startup(8888, this, null);
+        //启动SSL
+        new MqttServerService().startup(new MqttServerServiceOption.Builder()
+                .port(8888)
+                .messageListener(this)
+                .ssl(caCertFile, serverCertFile, keyFile)
+                .build());
     }
 
     @Override
@@ -35,7 +43,7 @@ public class MyAppRunner implements ApplicationRunner, IMqttMessageListener {
     @Override
     public void onMessage(String ip, String channelId, String topic, String message, Function<CustomMqttPublishMessage, Boolean> publisher) {
         logger.info(topic + ":" + message);
-        publisher.apply(new CustomMqttPublishMessage(channelId,topic+"_reply",message));
+        publisher.apply(new CustomMqttPublishMessage(channelId, topic + "_reply", message));
     }
 
     @Override
